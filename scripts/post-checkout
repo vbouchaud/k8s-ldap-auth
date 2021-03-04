@@ -1,0 +1,23 @@
+#!/bin/bash
+
+RED=$(tput -Txterm setaf 1)
+NORMAL="$(tput sgr0)"
+
+PREV_COMMIT=$1
+POST_COMMIT=$2
+
+if [[ '0000000000000000000000000000000000000000' == "$PREV_COMMIT" ]]; then exit 0; fi
+
+# Function used to cjeck if a file changed between two commits, if changed it prints a message to tell the user to reinstall the vendors (using $2)
+check() {
+  DIFF=$(git diff --shortstat "$PREV_COMMIT..$POST_COMMIT" ${1})
+  if [[ $DIFF != "" ]]; then
+    echo -e "$RED ${1} has changed. You must run ${2} install$NORMAL"
+  fi
+}
+
+# Search for pakage files and check if they changed, for node related files use yarn, for go use make
+for f in $(find . -not -path "*node_modules*" -name 'package.json'); do check $f "yarn"; done
+for f in $(find . -not -path "*node_modules*" -name 'yarn.lock'); do check $f "yarn"; done
+for f in $(find . -not -path "*node_modules*" -name 'go.mod'); do check $f "make"; done
+for f in $(find . -not -path "*node_modules*" -name 'go.sum'); do check $f "make"; done

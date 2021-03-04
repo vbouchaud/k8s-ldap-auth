@@ -1,0 +1,65 @@
+#!/bin/bash
+
+MODULE=$(cat "$PWD/go.mod" | head -n1 | sed -r -E "s/module (.*)/\1/")
+RED=$(tput -Txterm setaf 1)
+GREEN=$(tput -Txterm setaf 2)
+UNDERLINE="$(tput smul)"
+NORMAL="$(tput sgr0)"
+BOLD="$(tput bold)"
+STATUS=0
+
+title() {
+  echo "${UNDERLINE}${BOLD}${1}${NORMAL}"
+}
+
+success() {
+  echo "${GREEN}✓${NORMAL} ${1}"
+}
+
+error() {
+  echo "${RED}✗${NORMAL} $1"
+  STATUS=1
+}
+
+NAME=$(git branch | sed 's/* //')
+if [ "$NAME" != '(no branch)' ]; then
+  # Get all changes (files & their package)
+  packages=("")
+  for file in $(git diff --diff-filter=d --relative --cached --name-only | grep -E '\.(go)$'); do
+    packages+=("$(dirname "$file")")
+  done
+
+  # Remove duplicate packages
+  packages=($(printf "%s\n" "${packages[@]}" | sort -u | tr '\n' ' '))
+
+  # Format changed files
+  title "Format"
+  for file in $(git diff --diff-filter=d --cached --name-only | grep -E '\.(go)$'); do
+    {
+      gofmt -s -w "${file}" >>/dev/null 2>&1 && success "${file}" && git add "${file}"
+    } || {
+      error "Failed to format ${file}"
+    }
+  done
+
+  # Vet changed packages
+  title "Lint"
+  for package in "${packages[@]}"; do
+    {
+      go vet "${MODULE}/${package}" && success "${MODULE}/${package}"
+    } || {
+      error "Failed to lint ${MODULE}/${package}"
+    }
+  done
+fi
+
+if [ $STATUS -ne 0 ]; then
+  echo
+  echo "Hook ${BOLD}${RED}failed${NORMAL}, please check your code."
+  echo
+  exit 1
+else
+  echo
+  echo "Hook ${BOLD}${GREEN}succeeded${NORMAL}, proceeding to commit."
+  echo
+fi
