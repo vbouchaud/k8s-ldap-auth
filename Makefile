@@ -8,15 +8,15 @@ RESET  := $(shell tput -Txterm sgr0)
 # The binary to build (just the basename).
 PWD := $(shell pwd)
 NOW := $(shell date +%s)
-BIN := ldap-auth
+BIN := k8s-ldap-auth
 
-ORG ?= registry.aegir.bouchaud.org
+ORG ?= registry.aegir.bouchaud.org/
 NAMESPACE := legion/kubernetes
 PKG := bouchaud.org/${NAMESPACE}/${BIN}
 GO ?= go
 GOFMT ?= gofmt -s
 GOFILES := $(shell find . -name "*.go" -type f)
-GOVERSION := 1.13
+GOVERSION := $(shell go version | sed -r 's/go version go(.+)\s.+/\1/')
 PACKAGES ?= $(shell $(GO) list ./...)
 
 # This version-strategy uses git tags to set the version string
@@ -87,7 +87,6 @@ docker-amd64:
 		--build-arg VERSION="$(GIT_TAG)" \
 		--build-arg PKG="$(PKG)" \
 		--build-arg APPNAME="$(BIN)" \
-		--build-arg GOVERSION="$(GOVERSION)" \
 		--tag "$(ORG)/$(BIN):amd64-latest" \
 		.
 
@@ -107,7 +106,6 @@ endif
 		--build-arg VERSION="$(GIT_TAG)" \
 		--build-arg PKG="$(PKG)" \
 		--build-arg APPNAME="$(BIN)" \
-		--build-arg GOVERSION="$(GOVERSION)" \
 		--tag "$(ORG)/$(BIN):arm64-latest" \
 		.
 
