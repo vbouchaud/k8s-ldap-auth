@@ -24,7 +24,7 @@ func getServerCmd() *cli.Command {
 			},
 			&cli.IntFlag{
 				Name:    "port",
-				Value:   443,
+				Value:   3000,
 				EnvVars: []string{"PORT"},
 				Usage:   "The `PORT` the server will listen to.",
 			},
@@ -42,39 +42,44 @@ func getServerCmd() *cli.Command {
 				Name:     "bind-dn",
 				EnvVars:  []string{"LDAP_BINDDN"},
 				Required: true,
-				Usage:    "The service account `DN` to do the ldap search",
+				Usage:    "The service account `DN` to do the ldap search.",
 			},
 			&cli.StringFlag{
 				Name:     "bind-credentials",
 				EnvVars:  []string{"LDAP_BINDCREDENTIALS"},
 				FilePath: "/etc/k8s-ldap-auth/ldap/password",
-				Usage:    "The service account `PASSWORD` to do the ldap search",
+				Usage:    "The service account `PASSWORD` to do the ldap search, can be located in '/etc/k8s-ldap-auth/ldap/password'.",
 			},
 
 			// user search configuration
 			&cli.StringFlag{
 				Name:    "search-base",
 				EnvVars: []string{"LDAP_USER_SEARCHBASE"},
+				Usage:   "The `DN` where the ldap search will take place.",
 			},
 			&cli.StringFlag{
 				Name:    "search-filter",
 				Value:   "(&(objectClass=inetOrgPerson)(uid=%s))",
 				EnvVars: []string{"LDAP_USER_SEARCHFILTER"},
+				Usage:   "The `FILTER` to select users.",
 			},
 			&cli.StringFlag{
 				Name:    "member-of-property",
 				Value:   "ismemberof",
 				EnvVars: []string{"LDAP_USER_MEMBEROFPROPERTY"},
+				Usage:   "The `PROPERTY` where group entitlements are located.",
 			},
 			&cli.StringSliceFlag{
 				Name:    "search-attributes",
 				Value:   cli.NewStringSlice("uid", "dn", "cn"),
 				EnvVars: []string{"LDAP_USER_SEARCHATTR"},
+				Usage:   "Repeatable. User `PROPERTY` to fetch. Everything beside 'uid', 'dn', 'cn' (mandatory fields) will be stored in extra values in the UserInfo object.",
 			},
 			&cli.StringFlag{
 				Name:    "search-scope",
 				Value:   "sub",
 				EnvVars: []string{"LDAP_USER_SEARCHSCOPE"},
+				Usage:   "The `SCOPE` of the search. Can take to values base object: 'base', single level: 'single' or whole subtree: 'sub'.",
 			},
 		},
 		Action: func(c *cli.Context) error {

@@ -17,7 +17,7 @@ func Start() error {
 	}
 
 	app := cli.NewApp()
-	app.Name = "k8s-ldap-auth"
+	app.Name = "ldap-auth"
 	app.Version = version.VERSION
 	app.Compiled = version.Compiled()
 	app.Authors = []*cli.Author{
