@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         go:
-          - "1.20"
+          - "1.21"
 
     if: ${{ github.actor != 'dependabot[bot]' }}
 
